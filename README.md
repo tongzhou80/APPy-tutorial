@@ -11,10 +11,10 @@ Inspired by [openmp-tutorial](https://github.com/UoB-HPC/openmp-tutorial), we in
 * `heat` - An explicit finite difference 5-point stencil code.
 * `spmv` - An example of parallelizing the outer loop and vectorizing the inner loop.
 
-# Installation
+# Packages Required
 
-Install APPy using `pip` (APPy relies tools in `torch` so `torch` needs to be installed too):
+APPy can be installed using `pip` (APPy relies tools in `torch` so `torch` needs to be installed too). `numpy` and `numba` also need to installed for input setup and performance comparisons.
 
 ```bash
-pip install torch appyc
+pip install numpy numba torch appyc
 ```

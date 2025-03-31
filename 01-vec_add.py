@@ -1,3 +1,5 @@
+import numpy as np
+import numba
 import torch
 import appy
 from appy.utils import allclose, bench
@@ -13,23 +15,30 @@ def kernel_appy(a, b):
         c[i] = a[i] + b[i]
     return c
 
-
-def kernel_lib(a, b):
-    return a + b
-
+@numba.njit(parallel=True)
+def kernel_numba(a, b):
+    c = np.empty_like(a)
+    for i in numba.prange(a.shape[0]):
+        c[i] = a[i] + b[i]
+    return c
 
 def test():
-    torch.set_default_device('cuda')
-    for N in [10000, 100000, 1000000, 10000000]:
-        a = torch.randn(N)
-        b = torch.randn(N)
-        c_ref = kernel_lib(a, b)
+    for N in [10000, 100000, 1000000, 10000000, 100000000]:
+        a = np.random.randn(N)
+        b = np.random.randn(N)
+        c_numba = kernel_numba(a, b)
+
+        a_gpu = torch.from_numpy(a).to('cuda')
+        b_gpu = torch.from_numpy(b).to('cuda')
         print(f"N: {a.shape[0]}, dtype: {a.dtype}")
-        for f in [kernel_lib, kernel_appy]:
-            c = f(a, b)
-            assert allclose(c, c_ref, atol=1e-6)
-            ms = bench(lambda: f(a, b))
-            print(f"{f.__name__}: {ms:.4f} ms")
+
+        c_appy = kernel_appy(a_gpu, b_gpu)
+        assert allclose(c_appy.cpu().numpy(), c_numba, atol=1e-3)
+        numba_time = bench(lambda: kernel_numba(a, b))
+        appy_time = bench(lambda: kernel_appy(a_gpu, b_gpu))
+        print(f"kernel_numba: {numba_time:.4f} ms")
+        print(f"kernel_appy: {appy_time:.4f} ms")
+        print(f'speedup over numba: {(numba_time/appy_time):.2f}\n')
 
 
 if __name__ == "__main__":
