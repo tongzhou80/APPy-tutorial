@@ -1,9 +1,9 @@
-# Programming Your GPU with OpenMP
+# Programming Your GPU with APPy
 
 This is a hands-on tutorial that introduces the basics of running your Python code on the GPUs 
 through a series of worked examples.
 
-Inspired by [openmp-tutorial](https://github.com/UoB-HPC/openmp-tutorial), we include the following examples:
+Inspired by the [openmp-tutorial](https://github.com/UoB-HPC/openmp-tutorial), we include the following examples:
 
 * `vadd` – A simple vector addition program, often considered the "hello world" of GPU programming.
 * `pi` – A numerical integration program that calculates and approximate value of π.
