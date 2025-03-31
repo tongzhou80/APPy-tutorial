@@ -33,7 +33,7 @@ def test():
         print(f"N: {a.shape[0]}, dtype: {a.dtype}")
 
         c_appy = kernel_appy(a_gpu, b_gpu)
-        assert allclose(c_appy.cpu().numpy(), c_numba, atol=1e-3)
+        assert allclose(c_appy.cpu().numpy(), c_numba, atol=1e-6)
         numba_time = bench(lambda: kernel_numba(a, b))
         appy_time = bench(lambda: kernel_appy(a_gpu, b_gpu))
         print(f"kernel_numba: {numba_time:.4f} ms")
