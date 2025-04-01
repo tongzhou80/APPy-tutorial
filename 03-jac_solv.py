@@ -126,20 +126,19 @@ def main(Ndim=DEF_SIZE):
 
     # Run Jacobi solver
     A_gpu, b_gpu, x1_gpu, x2_gpu = torch.from_numpy(A).to('cuda'), torch.from_numpy(b).to('cuda'), torch.from_numpy(x1).to('cuda'), torch.from_numpy(x2).to('cuda')
-    x_final_appy, conv_appy, iters_appy = jacobi_solver_appy(A_gpu, b_gpu, x1_gpu, x2_gpu, Ndim)
+    x_final, conv, iters = jacobi_solver_appy(A_gpu, b_gpu, x1_gpu, x2_gpu, Ndim)
+    conv = np.sqrt(conv.item())
+    x_final = x_final.cpu().numpy()
 
     # End timer
     elapsed_time = time.time() - start_time
-    conv_appy = np.sqrt(conv_appy.item())
-
-    print(f"Convergence = {conv_appy:.6g} with {iters_appy} iterations and {elapsed_time:.6f} seconds")
-
-    x_final_appy = x_final_appy.cpu().numpy()
+    
+    print(f"Convergence = {conv:.6g} with {iters} iterations and {elapsed_time:.6f} seconds")
 
     # Verify solution
-    x_check = A @ x_final_appy
+    x_check = A @ x_final
     err = np.linalg.norm(x_check - b)
-    chksum = np.sum(x_final_appy)
+    chksum = np.sum(x_final)
 
     print(f"Jacobi solver: err = {err:.6g}, solution checksum = {chksum:.6g}")
     if err > TOLERANCE:
