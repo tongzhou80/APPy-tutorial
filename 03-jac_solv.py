@@ -3,7 +3,7 @@ from numba import jit, prange
 import time
 import torch
 import appy
-from appy.utils import allclose, bench
+from appy import to_gpu, to_cpu
 
 # Constants
 TOLERANCE = 0.001
@@ -125,13 +125,12 @@ def main(Ndim=DEF_SIZE):
     start_time = time.time()
 
     # Run Jacobi solver
-    A_gpu, b_gpu, x1_gpu, x2_gpu = torch.from_numpy(A).to('cuda'), torch.from_numpy(b).to('cuda'), torch.from_numpy(x1).to('cuda'), torch.from_numpy(x2).to('cuda')
-    x_final, conv, iters = jacobi_solver_appy(A_gpu, b_gpu, x1_gpu, x2_gpu, Ndim)
-    conv = np.sqrt(conv.item())
-    x_final = x_final.cpu().numpy()
+    x_final, conv, iters = jacobi_solver_appy(to_gpu(A), to_gpu(b), to_gpu(x1), to_gpu(x2), Ndim)
+    x_final, conv, iters = to_cpu(x_final), to_cpu(conv), to_cpu(iters)
 
     # End timer
     elapsed_time = time.time() - start_time
+    conv = np.sqrt(conv)
     
     print(f"Convergence = {conv:.6g} with {iters} iterations and {elapsed_time:.6f} seconds")
 
