@@ -52,12 +52,8 @@ def jacobi_solver_numba(A, b, x1, x2, Ndim):
 @appy.jit
 def jacobi_solver_appy(A, b, x1, x2, Ndim):
     """Perform Jacobi iterative method."""
-    TOLERANCE = 0.001
-    DEF_SIZE = 1000
-    MAX_ITERS = 100000
-    LARGE = 1000000.0
     iters = 0
-    conv = torch.tensor([LARGE], device='cuda')
+    conv = to_gpu([LARGE])
 
     while (conv[0] > TOLERANCE * TOLERANCE) and (iters < MAX_ITERS):
         # Update x2 based on Jacobi iteration
