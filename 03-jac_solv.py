@@ -49,7 +49,7 @@ def jacobi_solver_numba(A, b, x1, x2, Ndim):
     return x1, conv, iters
 
 
-@appy.jit(use_file='/home/tzhou343/projects/APPy-tutorial/.appy_kernels/jacobi_solver_appy.py')
+@appy.jit
 def jacobi_solver_appy(A, b, x1, x2, Ndim):
     """Perform Jacobi iterative method."""
     iters = 0
@@ -59,11 +59,11 @@ def jacobi_solver_appy(A, b, x1, x2, Ndim):
         # Update x2 based on Jacobi iteration
         #pragma parallel for
         for i in range(Ndim):
-            sum_val = float64(0.0)
+            x2[i] = 0.0
             #pragma simd
             for j in range(Ndim):
-                sum_val += A[i, j] * x1[j] * (i != j)
-            x2[i] = (b[i] - sum_val) / A[i, i]
+                x2[i] += A[i, j] * x1[j] * (i != j)
+            x2[i] = (b[i] - x2[i]) / A[i, i]
 
         # Calculate convergence
         conv[0] = 0.0
