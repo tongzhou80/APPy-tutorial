@@ -1,10 +1,12 @@
 import numpy as np
 import numba
 from numba import jit, prange
+import appy
 import time
 
 PI = np.arccos(-1.0)  # Pi
 
+@jit(nopython=True, parallel=True)
 def initial_value(n, dx, length):
     u = np.zeros((n, n), dtype=np.float64)
     y = dx
@@ -17,7 +19,7 @@ def initial_value(n, dx, length):
     return u
 
 @jit(nopython=True, parallel=True)
-def solve(n, alpha, dx, dt, u, u_tmp):
+def solve_numba(n, alpha, dx, dt, u, u_tmp):
     r = alpha * dt / (dx * dx)
     r2 = 1.0 - 4.0 * r
     
@@ -29,6 +31,28 @@ def solve(n, alpha, dx, dt, u, u_tmp):
                 r * (u[i-1, j] if i > 0 else 0.0) +
                 r * (u[i, j+1] if j < n-1 else 0.0) +
                 r * (u[i, j-1] if j > 0 else 0.0)
+            )
+
+@appy.jit
+def solve_appy(n, alpha, dx, dt, u, u_tmp):
+    r = alpha * dt / (dx * dx)
+    r2 = 1.0 - 4.0 * r
+
+    #pragma parallel for
+    for i in range(n):
+        #pragma simd
+        for j in range(n):
+            u_tmp[i, j] = (
+                r2 * u[i, j] +
+                r * torch.where(i<n-1, u[i+1, j], 0.0) +
+                r * torch.where(i>0, u[i-1, j], 0.0) +
+                r * torch.where(j<n-1, u[i, j+1], 0.0) +
+                r * torch.where(j>0, u[i, j-1], 0.0)
+                
+                # r * (u[i+1, j] if i < n-1 else 0.0) +
+                # r * (u[i-1, j] if i > 0 else 0.0) +
+                # r * (u[i, j+1] if j < n-1 else 0.0) +
+                # r * (u[i, j-1] if j > 0 else 0.0)
             )
 
 @jit(nopython=True)
@@ -52,8 +76,8 @@ def l2norm(n, u, nsteps, dt, alpha, dx, length):
 if __name__ == "__main__":
     import sys
     
-    n = 1000
-    nsteps = 10
+    n = 1000 #8000
+    nsteps = 100
     if len(sys.argv) == 3:
         n = int(sys.argv[1])
         nsteps = int(sys.argv[2])
@@ -74,13 +98,34 @@ if __name__ == "__main__":
     
     start_time = time.time()
     for _ in range(nsteps):
-        solve(n, alpha, dx, dt, u, u_tmp)
+        solve_numba(n, alpha, dx, dt, u, u_tmp)
         u, u_tmp = u_tmp, u  # Swap references
     solve_time = time.time() - start_time
     
     norm = l2norm(n, u, nsteps, dt, alpha, dx, length)
     total_time = time.time() - start_time
     
-    print(f"Error (L2 norm): {norm}")
+    print(f"Numba Error (L2 norm): {norm}")
     print(f"Solve time (s): {solve_time}")
     print(f"Total time (s): {total_time}")
+
+    
+    u = initial_value(n, dx, length)
+    u_tmp = np.zeros_like(u)
+    u, u_tmp = appy.to_gpu(u), appy.to_gpu(u_tmp)
+    
+    start_time = time.time()
+    for _ in range(nsteps):
+        solve_appy(n, alpha, dx, dt, u, u_tmp)
+        u, u_tmp = u_tmp, u  # Swap references
+
+    u, u_tmp = appy.to_cpu(u), appy.to_cpu(u_tmp)
+    solve_time = time.time() - start_time
+    
+    norm = l2norm(n, u, nsteps, dt, alpha, dx, length)
+    total_time = time.time() - start_time
+    
+    print(f"APPy Error (L2 norm): {norm}")
+    print(f"Solve time (s): {solve_time}")
+    print(f"Total time (s): {total_time}")
+
