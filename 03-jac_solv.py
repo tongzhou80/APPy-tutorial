@@ -53,9 +53,9 @@ def jacobi_solver_numba(A, b, x1, x2, Ndim):
 def jacobi_solver_appy(A, b, x1, x2, Ndim):
     """Perform Jacobi iterative method."""
     iters = 0
-    conv = to_gpu([LARGE])
+    conv = LARGE
 
-    while (conv[0] > TOLERANCE * TOLERANCE) and (iters < MAX_ITERS):
+    while (conv > TOLERANCE * TOLERANCE) and (iters < MAX_ITERS):
         # Update x2 based on Jacobi iteration
         #pragma parallel for
         for i in range(Ndim):
@@ -66,18 +66,18 @@ def jacobi_solver_appy(A, b, x1, x2, Ndim):
             x2[i] = (b[i] - x2[i]) / A[i, i]
 
         # Calculate convergence
-        conv[0] = 0.0
-        #pragma parallel for simd
+        conv = 0.0
+        #pragma parallel for simd global(conv)
         for i in range(Ndim):
             tmp = x2[i] - x1[i]
             #pragma atomic
-            conv[0] += tmp * tmp
+            conv += tmp * tmp
 
         # Swap x1 and x2
         x1, x2 = x2, x1
         iters += 1
 
-    return x1, conv[0], iters
+    return x1, conv, iters
 
 
 def main(Ndim=DEF_SIZE):
