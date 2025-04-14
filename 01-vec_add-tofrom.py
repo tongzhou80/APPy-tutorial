@@ -3,15 +3,14 @@ import numba
 import torch
 import appy
 from appy.utils import allclose, bench
-from appy import to_gpu, to_cpu
 
 # APPy works with both `torch` tensors and `cupy` ndarrays.
 # Use @appy.jit(lib='cupy') work with `cupy` ndarrays.
 
 @appy.jit
 def kernel_appy(a, b):
-    c = torch.empty_like(a)
-    #pragma parallel for simd
+    c = np.empty_like(a)
+    #pragma parallel for simd to(a,b,c) from(c)
     for i in range(a.shape[0]):
         c[i] = a[i] + b[i]
     return c
@@ -28,14 +27,12 @@ def test():
         a = np.random.randn(N)
         b = np.random.randn(N)
         c_numba = kernel_numba(a, b)
-
-        a_gpu, b_gpu = to_gpu(a), to_gpu(b)
         print(f"N: {a.shape[0]}, dtype: {a.dtype}")
 
-        c_appy = kernel_appy(a_gpu, b_gpu)
-        assert allclose(to_cpu(c_appy), c_numba, atol=1e-6)
+        c_appy = kernel_appy(a, b)
+        assert allclose(c_appy, c_numba, atol=1e-6)
         numba_time = bench(lambda: kernel_numba(a, b))
-        appy_time = bench(lambda: kernel_appy(a_gpu, b_gpu))
+        appy_time = bench(lambda: kernel_appy(a, b))
         print(f"kernel_numba: {numba_time:.4f} ms")
         print(f"kernel_appy: {appy_time:.4f} ms")
         print(f'speedup over numba: {(numba_time/appy_time):.2f}\n')
