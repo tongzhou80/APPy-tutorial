@@ -18,10 +18,9 @@ def kernel_numba(n):
 def kernel_appy(n):
     step = 1.0 / n
     s = 0.0
-    #pragma parallel for simd global(s)
+    #pragma parallel for simd reduction(+:s)
     for i in range(1, n+1):
         x = (i - 0.5) * step
-        #pragma atomic
         s += 4.0 / (1.0 + x * x)
     pi = step * s
     return pi
