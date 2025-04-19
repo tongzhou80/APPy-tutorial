@@ -7,20 +7,21 @@ from 0 to 1. The value of this integral is pi -- which
 is great since it gives us an easy way to check the answer.
 
 The original version is written in C with OpenMP by Tim Mattson, 11/99.
-This Python version using Numba is created by ChatGPT from Tim's version.
+This Python version using APPy is created by Tong Zhou from Tim's version.
 """
 
-import numba
+import appy
 import time
 
 # Set the number of steps
 num_steps = 100_000_000
 step = 1.0 / num_steps
 
-@numba.njit(parallel=True)
+@appy.jit
 def compute_pi(num_steps, step):
     sum = 0.0
-    for i in numba.prange(1, num_steps + 1):
+    #pragma parallel for simd reduction(+:sum)
+    for i in range(1, num_steps + 1):
         x = (i - 0.5) * step
         sum += 4.0 / (1.0 + x * x)
     return sum
