@@ -31,8 +31,7 @@ def jacobi_iteration(A, b, x1, x2, Ndim):
         for i in prange(Ndim):
             temp = 0.0
             for j in range(Ndim):
-                if i != j:
-                    temp += A[i, j] * x1[j]
+                temp += (A[i, j] * x1[j]) if i != j else 0.0
             x2[i] = (b[i] - temp) / A[i, i]
 
         conv = 0.0
