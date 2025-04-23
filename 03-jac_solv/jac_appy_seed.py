@@ -87,5 +87,14 @@ def main(Ndim=DEF_SIZE):
         print(f"\nWARNING: final solution error > {TOLERANCE}\n")
 
 if __name__ == "__main__":
-    main()
-    main()
+    import sys
+    if len(sys.argv) > 1:
+        try:
+            Ndim = int(sys.argv[1])
+        except ValueError:
+            print(f"Invalid argument: {sys.argv[1]} is not an integer.")
+            sys.exit(1)
+    else:
+        Ndim = DEF_SIZE
+    main(Ndim)
+    main(Ndim)
