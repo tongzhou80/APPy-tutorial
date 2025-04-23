@@ -3,7 +3,7 @@ from numba import njit, prange
 import time
 
 TOLERANCE = 0.001
-DEF_SIZE = 1000
+DEF_SIZE = 1500
 MAX_ITERS = 100000
 LARGE = 1e6
 
@@ -83,6 +83,5 @@ def main(Ndim=DEF_SIZE):
         print(f"\nWARNING: final solution error > {TOLERANCE}\n")
 
 if __name__ == "__main__":
-    main()
     main()
     main()
