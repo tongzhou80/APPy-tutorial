@@ -38,7 +38,7 @@ def jacobi_iteration(A, b, x1, x2, Ndim):
             x2[i] = (b[i] - temp) / A[i, i]
 
         conv = 0.0
-        #pragma parallel for simd reduction(+:conv)
+        #pragma parallel for simd
         for i in range(Ndim):
             tmp = x2[i] - x1[i]
             conv += tmp * tmp
