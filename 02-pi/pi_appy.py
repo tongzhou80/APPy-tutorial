@@ -20,7 +20,7 @@ step = 1.0 / num_steps
 @appy.jit
 def compute_pi(num_steps, step):
     sum = 0.0
-    #pragma parallel for simd shared(step)
+    #pragma parallel for simd
     for i in range(1, num_steps + 1):
         x = (i - 0.5) * step
         sum += 4.0 / (1.0 + x * x)

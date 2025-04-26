@@ -49,7 +49,7 @@ def solve(n, alpha, dx, dt, u, u_tmp, nsteps):
     r = alpha * dt / (dx * dx)
     r2 = 1.0 - 4.0 * r
     for _ in range(nsteps):
-        #pragma parallel for shared(r,r2)
+        #pragma parallel for
         for i in range(n):
             #pragma simd
             for j in range(n):
