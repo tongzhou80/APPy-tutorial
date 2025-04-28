@@ -56,7 +56,7 @@ def solve(n, alpha, dx, dt, u, u_tmp, nsteps):
                 right  = u[i+1, j] if i < n - 1 else 0.0
                 down   = u[i, j-1] if j > 0 else 0.0
                 up     = u[i, j+1] if j < n - 1 else 0.0
-                u_tmp[i, j] = r2 * center + r * (left + right + down + up)                
+                u_tmp[i, j] = r2 * center + r * (left + right + down + up)
 
         u, u_tmp = u_tmp, u  # Swap
 
