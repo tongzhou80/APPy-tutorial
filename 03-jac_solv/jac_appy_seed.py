@@ -29,17 +29,14 @@ def jacobi_iteration(A, b, x1, x2, Ndim):
     iters = 0
 
     while conv > TOLERANCE * TOLERANCE and iters < MAX_ITERS:
-        #pragma parallel for
-        for i in range(Ndim):
+        for i in prange(Ndim):
             temp = 0.0
-            #pragma simd
             for j in range(Ndim):
                 temp += (A[i, j] * x1[j]) if i != j else 0.0
             x2[i] = (b[i] - temp) / A[i, i]
 
         conv = 0.0
-        #pragma parallel for simd
-        for i in range(Ndim):
+        for i in prange(Ndim):
             tmp = x2[i] - x1[i]
             conv += tmp * tmp
 
