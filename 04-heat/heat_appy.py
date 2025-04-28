@@ -49,9 +49,7 @@ def solve(n, alpha, dx, dt, u, u_tmp, nsteps):
     r = alpha * dt / (dx * dx)
     r2 = 1.0 - 4.0 * r
     for _ in range(nsteps):
-        #pragma parallel for
-        for i in range(n):
-            #pragma simd
+        for i in appy.prange(n):
             for j in range(n):
                 center = u[i, j]
                 left   = u[i-1, j] if i > 0 else 0.0
