@@ -23,13 +23,18 @@ def initialize_arrays(a, b, c, res):
         c[i] = 0.0
         res[i] = a[i] + b[i]
 
-@jit(entry_to_device='a,b')
+# @jit(entry_to_device='a,b')
+# def add_vectors(a, b, c):
+#     c_cpu = torch.from_numpy(c)
+#     c = to_gpu(c)
+#     for i in prange(N):
+#         c[i] = a[i] + b[i]
+#     c_cpu.copy_(c)
+
+@jit
 def add_vectors(a, b, c):
-    c_cpu = torch.from_numpy(c)
-    c = to_gpu(c)
     for i in prange(N):
         c[i] = a[i] + b[i]
-    c_cpu.copy_(c)
 
 @njit(parallel=True)
 def test_result(c, res):

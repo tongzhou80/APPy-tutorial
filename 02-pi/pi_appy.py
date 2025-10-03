@@ -17,7 +17,7 @@ import time
 num_steps = 100_000_000
 step = 1.0 / num_steps
 
-@appy.jit
+@appy.jit(dump_final_appy=True)
 def compute_pi(num_steps, step):
     sum = 0.0
     for i in appy.prange(1, num_steps + 1):
